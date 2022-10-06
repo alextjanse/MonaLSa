@@ -26,7 +26,7 @@ function Color(r, g, b, a) {
     const g = Math.floor(Math.random() * 255);
     const b = Math.floor(Math.random() * 255);
     
-    return Color(r, g, b, a);
+    return new Color(r, g, b, a);
 }
 
 /**
@@ -40,12 +40,14 @@ function blend(c1, c2) {
     const { r: r2, g: g2, b: b2, a: a2 } = c2;
 
     const a = a1 + a2 * (1 - a1);
-    
-    const r = blendColorChannel(r1, a1, r2, a2);
-    const g = blendColorChannel(g1, a1, g2, a2);
-    const b = blendColorChannel(b1, a1, b2, a2);
 
-    return { r, g, b, a };
+    if (a === 0) return new Color(0, 0, 0, 0);
+    
+    const r = blendColorChannel(r1, a1, r2, a2, a);
+    const g = blendColorChannel(g1, a1, g2, a2, a);
+    const b = blendColorChannel(b1, a1, b2, a2, a);
+
+    return new Color(r, g, b, a);
 }
 
 /**

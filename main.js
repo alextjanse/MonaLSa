@@ -4,7 +4,7 @@ import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // Load the image
 const image = new Image();
-image.src = './images/original.jpeg';
+image.src = './images/debugging.png';
 let width, height;
 
 // Create the three canvasses
@@ -24,6 +24,8 @@ image.onload = () => {
     canvasses.forEach(canvas => canvas.setDimensions(width, height));
     
     originalCanvas.draw();
+
+    iteration();
 }
 
 /**
@@ -66,17 +68,23 @@ function getScoreDiff(triangle) {
     for (let x = 0; x < w; x++) {
         for (let y = 0; y < h; y++) {
             const index = 4 * (x * w + y);
-
+            
             // The pixel color in the original painting
             const c = originalCanvas.getPixel(x0 + x, y0 + y);
-
+            
             // The pixel color in the current solution
             const c1 = new Color(...currentData.slice(index, index + 4));
-
+            
             // The pixel color of the new triangle
             const c2 = new Color(...triangleData.slice(index, index + 4));
 
+            // if (c2.r + c2.g + c2.b + c2.a > 0) {
+            //     debugger;
+            // }
+            
             const c0 = blend(c1, c2);
+
+            if (c0.a === 0) continue;
 
             const score0 = score(c, c0);
             const score1 = score(c, c1);
@@ -108,13 +116,19 @@ function displayTriangle(triangle) {
     // Clear the canvas
     testingCanvas.clear();
 
-    drawTriangle(triangle, testingCanvas);
+    testingCanvas.drawTriangle(triangle);
 }
 
 function iteration() {
     const triangle = generateTriangle(0.1);
  
     displayTriangle(triangle);
-    
-    drawTriangle(triangle, productCanvas);
+
+    const scoreDiff = getScoreDiff(triangle);
+
+    if (scoreDiff < 0) {
+        productCanvas.drawTriangle(triangle);
+    }
+
+    requestAnimationFrame(iteration);
 }
