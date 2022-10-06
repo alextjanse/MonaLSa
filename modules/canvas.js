@@ -1,5 +1,5 @@
 import { Color } from './color.js';
-import { Triangle } from './math.js';
+import { Rectangle, Triangle } from './math.js';
 
 class Canvas {
     constructor(id) {
@@ -7,6 +7,7 @@ class Canvas {
         this.ctx = this.html.getContext('2d');
         this.width = null;
         this.height = null;
+        this.boundingBox = null;
     }
 
     setDimensions(width, height) {
@@ -14,6 +15,8 @@ class Canvas {
 
         this.width = width;
         this.height = height;
+
+        this.boundingBox = new Rectangle(0, 0, width, height);
         
         html.width = width;
         html.height = height;
@@ -38,12 +41,12 @@ class Canvas {
     drawTriangle(triangle) {
         const { ctx } = this;
 
-        const { p1, p2, p3, c } = triangle;
-
-        const { x: x1, y: y1 } = p1;
-        const { x: x2, y: y2 } = p2;
-        const { x: x3, y: y3 } = p3;
-        const { r, g, b, a } = c;
+        const { 
+            p1: { x: x1, y: y1 },
+            p2: { x: x2, y: y2 },
+            p3: { x: x3, y: y3 },
+            c: { r, g, b, a },
+        } = triangle;
 
         // Set the color
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
@@ -68,10 +71,9 @@ class OriginalCanvas extends Canvas {
 
     draw() {
         const { ctx, image, width, height } = this;
-        let { data } = this;
 
         ctx.drawImage(image, 0, 0);
-        data = ctx.getImageData(0, 0, width, height).data;
+        this.data = ctx.getImageData(0, 0, width, height).data;
     }
 
     getPixel(x, y) {
@@ -80,9 +82,9 @@ class OriginalCanvas extends Canvas {
         const index = 4 * (y * width + x);
         
         // c = [r, g, b, a]
-        const c = data.slice(index, 4);
+        const c = data.slice(index, index + 4);
 
-        return Color(...c);
+        return new Color(...c);
     }
 }
 
