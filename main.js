@@ -47,15 +47,14 @@ image.onload = () => {
 
 /**
  * Generate a random triangle.
- * @param {number} a Alpha channel
  * @return {Triangle}
  */
-function generateTriangle(a) {
+function generateTriangle() {
     // percentage of padding for spawn points of random points outside the canvas
     const padding = 0.2;
 
     // Random point spawner, where points can spawn outside the canvas
-    const getPointAnywhere = () => getRandomPoint(-padding * width, (2 + padding) * width, -padding * height, (2 + padding) * height);
+    const getPointAnywhere = () => getRandomPoint(-padding * width, (1 + padding) * width, -padding * height, (1 + padding) * height);
 
     // Random point spawner, where the point is in the canvas
     const getPointInCanvas = () => getRandomPoint(0, width, 0, height);
@@ -99,9 +98,7 @@ function generateTriangle(a) {
         p3 = getPointInCanvas();
     }
 
-    const c = getRandomColor(a);
-
-    return new Triangle(p1, p2, p3, c);
+    return new Triangle(p1, p2, p3);
 }
 
 /**
@@ -110,11 +107,12 @@ function generateTriangle(a) {
  * @return {number}
  */
 function getScoreDiff(triangle) {
-    const { x0, y0, w, h } = triangleBoundingBox(triangle, bbox);
+    const dataFrame = triangleBoundingBox(triangle, bbox);
+    const { x0, y0, width, height } = dataFrame;
 
     // Get the image data of the bounding box
-    productCanvas.getData(x0, y0, w, h);
-    testingCanvas.getData(x0, y0, w, h);
+    productCanvas.loadData(dataFrame);
+    testingCanvas.loadData(dataFrame);
 
     /* 
     Loop over all the pixels in the bounding box, calculate how the new
@@ -124,8 +122,8 @@ function getScoreDiff(triangle) {
 
     let totalScoreDiff = 0;
 
-    for (let x = x0; x < x0 + w; x++) {
-        for (let y = y0; y < y0 + h; y++) {
+    for (let x = x0; x < x0 + width; x++) {
+        for (let y = y0; y < y0 + height; y++) {
             // The pixel color in the original painting
             const c = originalCanvas.getPixel(x, y);
             
@@ -164,22 +162,29 @@ function score(c0, c) {
            (c0.b - c.b)**2;
 }
 
-function displayTriangle(triangle) {
+/**
+ * Display the triangle on the testing canvas.
+ * @param {Triangle} triangle
+ */
+function displayTriangle(triangle, color) {
     // Clear the canvas
     testingCanvas.clear();
 
-    testingCanvas.drawTriangle(triangle);
+    triangle.draw(testingCanvas, color);
 }
 
 function iteration() {
-    const triangle = generateTriangle(0.1);
+    const triangle = generateTriangle();
+    const color = getRandomColor(0.1);
  
-    displayTriangle(triangle);
+    debugger;
+
+    displayTriangle(triangle, color);
 
     const scoreDiff = getScoreDiff(triangle);
 
     if (scoreDiff < 0) {
-        productCanvas.drawTriangle(triangle);
+        triangle.draw(productCanvas, color);
     }
 
     requestAnimationFrame(iteration);
