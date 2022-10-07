@@ -1,6 +1,6 @@
 import { Color, getRandomColor, blend } from './modules/color.js';
 import { Triangle, getRandomPoint, triangleBoundingBox, isPointInRectangle, Rectangle } from './modules/math.js';
-import { count, randomChance } from './modules/operators.js';
+import { count, randomChance } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // Load the image

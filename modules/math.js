@@ -1,15 +1,16 @@
-import { randomInRange } from './operators.js';
+import { randomInRange } from './utils.js';
 
-/**
- * Point object
- * @constructor
- * @param {number} x 
- * @param {number} y 
- * @return {Point}
- */
-function Point(x, y) {
-    this.x = x;
-    this.y = y;
+
+class Point {
+    /**
+     * Create a point.
+     * @param {number} x x coordinate
+     * @param {number} y y coordinate
+     */
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
 }
 
 function getRandomPoint(xlb, xub, ylb, yub) {
@@ -24,9 +25,17 @@ function getRandomPoint(xlb, xub, ylb, yub) {
  * @param {Point} p endpoint 1
  * @param {Point} q endpoint 2
  */
-function LineSegment(p, q) {
-    this.p = p;
-    this.q = q;
+class LineSegment {
+    constructor(p, q) {
+        this.p = p;
+        this.q = q;
+    }
+
+    length() {
+        const { p: { x: x1, y: y1 }, q: { x: x2, y: y2 } } = this;
+
+        Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    }
 }
 
 /**
@@ -38,42 +47,59 @@ function LineSegment(p, q) {
  * @param {Point} c 
  * @return {Triangle} 
  */
-function Triangle(p1, p2, p3, c) {
-    this.p1 = p1;
-    this.p2 = p2;
-    this.p3 = p3;
+class Triangle {
+    constructor(p1, p2, p3, c) {
+        this.p1 = p1;
+        this.p2 = p2;
+        this.p3 = p3;
 
-    this.l1 = new LineSegment(p1, p2);
-    this.l2 = new LineSegment(p2, p3);
-    this.l3 = new LineSegment(p3, p1);
+        this.l1 = new LineSegment(p1, p2);
+        this.l2 = new LineSegment(p2, p3);
+        this.l3 = new LineSegment(p3, p1);
 
-    this.c = c;
+        this.c = c;
+    }
+
+    area() {
+        const { x: x1, y: y1 } = p1;
+        const { x: x2, y: y2 } = p2;
+        const { x: x3, y: y3 } = p3;
+
+        return 0.5 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2));
+    }
 }
 
-/**
- * Rectangle object
- * @constructor
- * @param {number} x0 origin-x
- * @param {number} y0 origin-y
- * @param {number} w width
- * @param {number} h height
- * @return {Rectangle}
- */
-function Rectangle(x0, y0, w, h) {
-    this.x0 = x0;
-    this.y0 = y0;
-    this.w = w;
-    this.h = h;
+/** Class representing a rectangle. */
+class Rectangle {
+    /**
+     * Create a rectangle.
+     * @param {number} x0 origin-x
+     * @param {number} y0 origin-y
+     * @param {number} w width
+     * @param {number} h height
+     */
+    constructor(x0, y0, w, h) {
+        this.x0 = x0;
+        this.y0 = y0;
+        this.w = w;
+        this.h = h;
 
-    this.topLeft = new Point(x0, y0);
-    this.topRight = new Point(x0 + w, y0);
-    this.bottomLeft = new Point(x0, y0 + h);
-    this.bottomRight = new Point(x0 + w, y0 + h);
+        this.topLeft = new Point(x0, y0);
+        this.topRight = new Point(x0 + w, y0);
+        this.bottomLeft = new Point(x0, y0 + h);
+        this.bottomRight = new Point(x0 + w, y0 + h);
 
-    this.top = new LineSegment(this.topLeft, this.topRight);
-    this.bottom = new LineSegment(this.bottomLeft, this.bottomRight);
-    this.left = new LineSegment(this.topLeft, this.bottomLeft);
-    this.right = new LineSegment(this.topRight, this.bottomRight);
+        this.top = new LineSegment(this.topLeft, this.topRight);
+        this.bottom = new LineSegment(this.bottomLeft, this.bottomRight);
+        this.left = new LineSegment(this.topLeft, this.bottomLeft);
+        this.right = new LineSegment(this.topRight, this.bottomRight);
+    }
+
+    area() {
+        const { w, h } = this;
+
+        return w * h;
+    }
 }
 
 /**
