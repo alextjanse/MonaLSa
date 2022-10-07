@@ -1,3 +1,5 @@
+import { randomInRange } from './operators.js';
+
 /**
  * Point object
  * @constructor
@@ -11,8 +13,8 @@ function Point(x, y) {
 }
 
 function getRandomPoint(xlb, xub, ylb, yub) {
-    const x = Math.random() * (xub - xlb) + xlb;
-    const y = Math.random() * (yub - ylb) + ylb;
+    const x = randomInRange(xlb, xub);
+    const y = randomInRange(ylb, yub);
 
     return new Point(x, y);
 }

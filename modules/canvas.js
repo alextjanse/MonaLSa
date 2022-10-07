@@ -7,7 +7,14 @@ class Canvas {
         this.ctx = this.html.getContext('2d');
         this.width = null;
         this.height = null;
-        this.boundingBox = null;
+
+        this.data = null;
+        this.newDataFlag = true;
+
+        this.dx = 0;
+        this.dy = 0;
+        this.dw = 0;
+        this.dh = 0;
     }
 
     setDimensions(width, height) {
@@ -15,17 +22,37 @@ class Canvas {
 
         this.width = width;
         this.height = height;
-
-        this.boundingBox = new Rectangle(0, 0, width, height);
         
         html.width = width;
         html.height = height;
     }
 
     getData(x, y, w, h) {
-        const { ctx } = this;
+        const { ctx, dx, dy, dw, dh, newDataFlag } = this;
 
-        return ctx.getImageData(x, y, w, h).data;
+        if (!newDataFlag || (x === dx && y === dy && w === dw && h === dh)) {
+            return;
+        }
+
+        this.data = ctx.getImageData(x, y, w, h).data;
+        
+        this.dx = x;
+        this.dy = y;
+        this.dw = w;
+        this.dh = h;
+
+        this.newDataFlag = false;
+    }
+
+    getPixel(x, y) {
+        const { data, dx, dy, dw } = this;
+
+        const index = 4 * (y - dy) * dw + (x - dx);
+        
+        // c = [r, g, b, a]
+        const c = data.slice(index, index + 4);
+
+        return new Color(...c);
     }
 
     clear() {
@@ -59,6 +86,8 @@ class Canvas {
         
         // Draw
         ctx.fill();
+
+        this.newDataFlag = true;
     }
 }
 
@@ -69,22 +98,11 @@ class OriginalCanvas extends Canvas {
         this.data = null;
     }
 
-    draw() {
+    drawImage() {
         const { ctx, image, width, height } = this;
 
         ctx.drawImage(image, 0, 0);
-        this.data = ctx.getImageData(0, 0, width, height).data;
-    }
-
-    getPixel(x, y) {
-        const { data, width } = this;
-
-        const index = 4 * (y * width + x);
-        
-        // c = [r, g, b, a]
-        const c = data.slice(index, index + 4);
-
-        return new Color(...c);
+        this.getData(0, 0, width, height);
     }
 }
 
