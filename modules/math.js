@@ -57,43 +57,40 @@ function getRandomPoint(xlb, xub, ylb, yub) {
  * Get the bounding box of the intersection between a rectangle and a triangle.
  * @param {Triangle} t
  * @param {Rectangle} b
- * @return {Rectangle}
+ * @return {Rectangle | null} Return null if the triangle falls outside the rectangle.
  */
  function triangleBoundingBox(t, b) {
     const { p1, p2, p3, l1, l2, l3 } = t;
-    const { x: x1, y: y1 } = p1;
-    const { x: x2, y: y2 } = p2;
-    const { x: x3, y: y3 } = p3;
 
     /*
     Calculate the bounding box of the intersection between the canvas
     and the triangle. Do this by keeping track of all x and y values
     of the points in the canvas and the intersection points of the triangle
     with the canvas borders. Then, get the maximum and minimum x and y values.
-    */
-    let xs = [x3];
-    let ys = [y3];
+     */
 
-    if (isPointInRectangle(p1, b)) {
-        xs.push(x1);
-        ys.push(y1);
-    }
-
-    if (isPointInRectangle(p2, b)) {
-        xs.push(x2);
-        ys.push(y2);
-    }
-
-    const intersections = [
-        ...lineSegmentRectangleIntersection(l1, b),
-        ...lineSegmentRectangleIntersection(l2, b),
-        ...lineSegmentRectangleIntersection(l3, b)
-    ];
-
-    intersections.forEach(p => {
-        xs.push(p.x);
-        ys.push(p.y);
+    let xs = [];
+    let ys = [];
+   
+    [p1, p2, p3].forEach(p => {
+        if (isPointInRectangle(p, b)) {
+            const { x, y } = p;
+            xs.push(x);
+            ys.push(y);
+        }
     });
+
+    [l1, l2, l3].forEach(l => {
+        lineSegmentRectangleIntersection(l, b).forEach(({ x, y }) => {
+            xs.push(x);
+            ys.push(y);
+        });
+    });
+
+    if (xs.length === 0) {
+        // All points are outside the rectangle
+        return null;
+    }
 
     const xmin = Math.floor(Math.min(...xs));
     const xmax = Math.ceil(Math.max(...xs));
@@ -110,9 +107,9 @@ function getRandomPoint(xlb, xub, ylb, yub) {
  */
  function isPointInRectangle(p, b) {
     const { x, y } = p;
-    const { x0, y0, w, h } = b;
+    const { x0, y0, width, height } = b;
 
-    return (x0 <= x) && (x <= x0 + w) && (y0 <= y) && (y <= y0 + h);
+    return (x0 <= x) && (x <= x0 + width) && (y0 <= y) && (y <= y0 + height);
 }
 
 export { Point, LineSegment, Triangle, Rectangle, isPointInRectangle, getRandomPoint, triangleBoundingBox };

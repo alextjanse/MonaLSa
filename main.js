@@ -1,6 +1,6 @@
 import { Color, getRandomColor, blend } from './modules/color.js';
 import { Triangle, getRandomPoint, triangleBoundingBox, isPointInRectangle, Rectangle } from './modules/math.js';
-import { count, randomChance } from './modules/utils.js';
+import { randomChance } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // Load the image
@@ -10,8 +10,8 @@ image.src = './images/original.jpeg';
 // These variables are for all canvasses, so let's just store them here.
 
 /** @type {number} Width of the canvasses */
-let width;
-let height;
+let canvasWidth;
+let canvasHeight;
 
 /** @type {Rectangle} Bounding box of the canvasses */
 let bbox;
@@ -32,11 +32,11 @@ const canvasses = [originalCanvas, productCanvas, testingCanvas];
 
 image.onload = () => {
     // Image is loaded, set width and height wherever it should be stored
-    ({ width, height } = image);
+    ({ width: canvasWidth, height: canvasHeight } = image);
 
-    bbox = new Rectangle(0, 0, width, height);
+    bbox = new Rectangle(0, 0, canvasWidth, canvasHeight);
 
-    canvasses.forEach(canvas => canvas.setDimensions(width, height));
+    canvasses.forEach(canvas => canvas.setDimensions(canvasWidth, canvasHeight));
     
     // Draw the image on the canvas
     originalCanvas.drawImage();
@@ -54,49 +54,20 @@ function generateTriangle() {
     const padding = 0.2;
 
     // Random point spawner, where points can spawn outside the canvas
-    const getPointAnywhere = () => getRandomPoint(-padding * width, (1 + padding) * width, -padding * height, (1 + padding) * height);
+    const getPointAnywhere = () => getRandomPoint(-padding * canvasWidth, (1 + padding) * canvasWidth, -padding * canvasHeight, (1 + padding) * canvasHeight);
 
     // Random point spawner, where the point is in the canvas
-    const getPointInCanvas = () => getRandomPoint(0, width, 0, height);
+    const getPointInCanvas = () => getRandomPoint(0, canvasWidth, 0, canvasHeight);
+
+    const randomGetter = () => randomChance(1 / 2) ? getPointInCanvas() : getPointAnywhere();
 
     /* 
     We want to make random triangles, but we want them to be "nice" (for how far you could call a triangle nice).
     Let's start with getting point p1 from anywhere, inside or outside the canvas.
     */
-    let p1, p2, p3;
-
-    p1 = getPointAnywhere();
-
-    /* 
-    Now we want p2 to be either inside or outside the canvas. Let's just say for now that we allow p2 to be outside
-    the canvas if p1 is inside the canvas, or else with a 50% chance to spice things up.
-    */
-
-    if (isPointInRectangle(p1, bbox) || randomChance(0.5)) {
-        p2 = getPointAnywhere();
-    } else {
-        p2 = getPointInCanvas();
-    }
-    
-    /* 
-    p2 is again either on the inside or outside of the canvas. What do we want to do with this information?
-    We have that p1 is either inside or outside the canvas, and p2 as well. Let's say that they are both inside
-    the canvas, then we allow p3 to get outside. If only either p1 or p2 is outside the canvas, we allow p3 to
-    be outside the canvas with a 2/3 chance (again, nice spice.), and only 1/3 when both p1 and p2 are outside
-    the canvas.
-    */
-
-    const numberOfPointsInCanvas = count([p1, p2], p => isPointInRectangle(p, bbox));
-
-    if (numberOfPointsInCanvas === 2) {
-        p3 = getPointAnywhere();
-    } else if (numberOfPointsInCanvas === 1 && randomChance(2 / 3)) {
-        p3 = getPointAnywhere();
-    } else if (numberOfPointsInCanvas === 0 && randomChance(1 / 3)) {
-        p3 = getPointAnywhere();
-    } else {
-        p3 = getPointInCanvas();
-    }
+    const p1 = getPointInCanvas();
+    const p2 = randomGetter();
+    const p3 = randomGetter();
 
     return new Triangle(p1, p2, p3);
 }
@@ -176,8 +147,6 @@ function displayTriangle(triangle, color) {
 function iteration() {
     const triangle = generateTriangle();
     const color = getRandomColor(0.1);
- 
-    debugger;
 
     displayTriangle(triangle, color);
 
@@ -186,6 +155,6 @@ function iteration() {
     if (scoreDiff < 0) {
         triangle.draw(productCanvas, color);
     }
-
+    
     requestAnimationFrame(iteration);
 }

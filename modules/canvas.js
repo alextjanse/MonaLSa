@@ -47,7 +47,7 @@ class Canvas {
         const { context, dataFrame: currentFrame, newDataFlag } = this;
         const { x0, y0, width, height } = dataFrame;
 
-        if (!newDataFlag && (currentFrame && dataFrame.equals(currentFrame))) {
+        if (!(newDataFlag || (currentFrame && !dataFrame.equals(currentFrame)))) {
             return;
         }
 
@@ -77,13 +77,21 @@ class Canvas {
 
     fillPath(points, color) {
         const { context } = this;
-        const {r, g, b, a } = color;
+        const { r, g, b, a } = color;
 
         // Set the color
         context.fillStyle = `rgba(${r},${g},${b},${a})`;
 
+        context.beginPath();
+
         // Follow the points to draw a path
-        points.forEach(({ x, y }) => context.moveTo(x, y));
+        const [{ x: x1, y: y1 }, ...rest] = points;
+
+        context.moveTo(x1, y1);
+        
+        rest.forEach(({ x, y }) => {
+            context.lineTo(x, y);
+        });
 
         context.fill();
 
