@@ -91,7 +91,7 @@ function generateTriangle() {
 }
 
 function generateCircle() {
-    const radius = randomInRange(5, 10);
+    const radius = randomInRange(5, 100);
     const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
 
     return new Circle(origin, radius);
