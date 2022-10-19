@@ -77,10 +77,8 @@ class Canvas {
 
     fillPath(points, color) {
         const { context } = this;
-        const { r, g, b, a } = color;
 
-        // Set the color
-        context.fillStyle = `rgba(${r},${g},${b},${a})`;
+        this.setColor(color);
 
         context.beginPath();
 
@@ -96,6 +94,18 @@ class Canvas {
         context.fill();
 
         this.newDataFlag = true;
+    }
+
+    /**
+     * Set the fill style to the given color.
+     * @param {Color} color Color object
+     */
+    setColor(color) {
+        const { context } = this;
+        const { r, g, b, a } = color;
+
+        // Set the color
+        context.fillStyle = `rgba(${r},${g},${b},${a})`;
     }
 }
 
