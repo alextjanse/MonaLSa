@@ -1,5 +1,3 @@
-import { createPointCloudBoundingBox, Point, Rectangle } from './math.js';
-
 /**
  * Sum of an array
  * @param {number[]} array array of numbers

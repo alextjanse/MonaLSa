@@ -1,5 +1,5 @@
 import { Color } from './color.js';
-import { Point, Rectangle, Triangle } from './math.js';
+import { Rectangle } from './math.js';
 
 /**
  * Canvas class.

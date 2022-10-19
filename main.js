@@ -2,7 +2,6 @@ import { Shape2D } from './modules/shapes/shape.js';
 import { Color, getRandomColor, blend } from './modules/color.js';
 import {
     Triangle,
-    isPointInRectangle,
     Rectangle,
     Circle,
     getRandomPoint,
