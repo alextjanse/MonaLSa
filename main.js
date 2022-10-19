@@ -1,6 +1,13 @@
+import { Shape2D } from './modules/shapes/shape.js';
 import { Color, getRandomColor, blend } from './modules/color.js';
-import { Triangle, getRandomPoint, triangleBoundingBox, isPointInRectangle, Rectangle } from './modules/math.js';
-import { randomChance } from './modules/utils.js';
+import {
+    Triangle,
+    isPointInRectangle,
+    Rectangle,
+    Circle,
+    getRandomPoint,
+} from './modules/math.js';
+import { randomChance, randomInRange } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // Load the image
@@ -14,7 +21,7 @@ let canvasWidth;
 let canvasHeight;
 
 /** @type {Rectangle} Bounding box of the canvasses */
-let bbox;
+let canvasBoundingBox;
 
 // Create the three canvasses
 
@@ -34,7 +41,7 @@ image.onload = () => {
     // Image is loaded, set width and height wherever it should be stored
     ({ width: canvasWidth, height: canvasHeight } = image);
 
-    bbox = new Rectangle(0, 0, canvasWidth, canvasHeight);
+    canvasBoundingBox = new Rectangle(0, 0, canvasWidth, canvasHeight);
 
     canvasses.forEach(canvas => canvas.setDimensions(canvasWidth, canvasHeight));
     
@@ -72,14 +79,20 @@ function generateTriangle() {
     return new Triangle(p1, p2, p3);
 }
 
+function generateCircle() {
+    const radius = randomInRange(5, 10);
+    const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
+
+    return new Circle(origin, radius);
+}
+
 /**
  * Get the score difference of drawing the triangle in the solution.
- * @param {Triangle} triangle 
+ * @param {Shape2D} shape 
  * @return {number}
  */
-function getScoreDiff(triangle) {
-    const dataFrame = triangleBoundingBox(triangle, bbox);
-    const { x0, y0, width, height } = dataFrame;
+function getScoreDiff(shape) {
+    const dataFrame = shape.canvasIntersection(canvasBoundingBox);
 
     // Get the image data of the bounding box
     productCanvas.loadData(dataFrame);
@@ -87,34 +100,32 @@ function getScoreDiff(triangle) {
 
     /* 
     Loop over all the pixels in the bounding box, calculate how the new
-    triangle and our current solution would blend, and see if we get closer
-    to the actual pixel. For each pixel, we give a score of how far off it is.
+    shape and our current solution would blend, and see if we get closer
+    to the actual painting.
     */
 
     let totalScoreDiff = 0;
 
-    for (let x = x0; x < x0 + width; x++) {
-        for (let y = y0; y < y0 + height; y++) {
-            // The pixel color in the original painting
-            const c = originalCanvas.getPixel(x, y);
-            
-            // The pixel color in the current solution
-            const c1 = productCanvas.getPixel(x, y);
+    for (const { x, y } of dataFrame.loop()) {
+        // The pixel color in the original painting
+        const c = originalCanvas.getPixel(x, y);
+        
+        // The pixel color in the current solution
+        const c1 = productCanvas.getPixel(x, y);
 
-            // The pixel color of the new triangle
-            const c2 = testingCanvas.getPixel(x, y);
-            
-            const c0 = blend(c1, c2);
+        // The pixel color of the new shape
+        const c2 = testingCanvas.getPixel(x, y);
+        
+        const c0 = blend(c1, c2);
 
-            if (c0.a === 0) continue;
+        if (c0.a === 0) continue;
 
-            const score0 = score(c, c0);
-            const score1 = score(c, c1);
-            
-            const scoreDiff = score0 - score1;
+        const score0 = score(c, c0);
+        const score1 = score(c, c1);
+        
+        const scoreDiff = score0 - score1;
 
-            totalScoreDiff += scoreDiff;
-        }
+        totalScoreDiff += scoreDiff;
     }
 
     return totalScoreDiff;
@@ -135,25 +146,26 @@ function score(c0, c) {
 
 /**
  * Display the triangle on the testing canvas.
- * @param {Triangle} triangle
+ * @param {Shape} shape
  */
-function displayTriangle(triangle, color) {
+function displayShape(shape, color) {
     // Clear the canvas
     testingCanvas.clear();
 
-    triangle.draw(testingCanvas, color);
+    shape.draw(testingCanvas, color);
 }
 
 function iteration() {
-    const triangle = generateTriangle();
     const color = getRandomColor(0.1);
 
-    displayTriangle(triangle, color);
+    const circle = generateCircle();
 
-    const scoreDiff = getScoreDiff(triangle);
+    displayShape(circle, color);
+
+    const scoreDiff = getScoreDiff(circle);
 
     if (scoreDiff < 0) {
-        triangle.draw(productCanvas, color);
+        circle.draw(productCanvas, color);
     }
     
     requestAnimationFrame(iteration);

@@ -1,5 +1,4 @@
-import { Canvas } from '../canvas.js';
-import { Color } from '../color.js';
+import BoundingBox from '../boundingBox.js';
 
 class Shape {
     constructor() {
@@ -37,6 +36,16 @@ class Shape2D extends Shape {
 
     area() {
         throw new Error('Method "Shape2D.area()" must be implemented.')
+    }
+    
+    /**
+     * Create the intersection box of the canvas and the shape.
+     * @abstract
+     * @param {BoundingBox} canvasBoundingBox 
+     * @return {BoundingBox}
+     */
+    canvasIntersection(canvasBoundingBox) {
+        throw new Error('Method "canvasIntersection(canvasBoundingBox)" must be implemented.')
     }
 }
 
