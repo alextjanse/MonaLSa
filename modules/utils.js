@@ -20,3 +20,17 @@ export const randomChance = (p) => Math.random() < p;
 export const randomInRange = (lb = 0, ub = 255) => Math.random() * (ub - lb) + lb;
 
 export const randomSign = () => randomChance(0.5) ? 1 : -1;
+
+/**
+ * Execute a random callback function from an array
+ * @param {(() => any)[]} callbacks Array of callback functions
+ * @return {any} Return whatever the getter got
+ */
+export const randomGetter = (callbacks) => {
+    const n = callbacks.length;
+
+    const i = Math.floor(Math.random() * n);
+    
+    // Execute callback function at index i in the array
+    return callbacks[i]();
+}

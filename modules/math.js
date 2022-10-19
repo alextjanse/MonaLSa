@@ -70,10 +70,10 @@ function getRandomPoint(xlb, xub, ylb, yub) {
     let xmin, xmax, ymin, ymax;
 
     points.forEach(({ x, y }) => {
-        xmin = xmin === null ? x : Math.min(xmin, x);
-        xmax = xmax === null ? x : Math.max(xmax, x);
-        ymin = ymin === null ? y : Math.min(ymin, y);
-        ymax = ymax === null ? y : Math.max(ymax, y);
+        xmin = xmin == null ? x : Math.min(xmin, x);
+        xmax = xmax == null ? x : Math.max(xmax, x);
+        ymin = ymin == null ? y : Math.min(ymin, y);
+        ymax = ymax == null ? y : Math.max(ymax, y);
     });
 
     return new BoundingBox(

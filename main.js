@@ -7,7 +7,7 @@ import {
     Circle,
     getRandomPoint,
 } from './modules/math.js';
-import { randomChance, randomInRange } from './modules/utils.js';
+import { randomInRange, randomGetter } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // Load the image
@@ -44,12 +44,16 @@ image.onload = () => {
     canvasBoundingBox = new Rectangle(0, 0, canvasWidth, canvasHeight);
 
     canvasses.forEach(canvas => canvas.setDimensions(canvasWidth, canvasHeight));
-    
+
     // Draw the image on the canvas
     originalCanvas.drawImage();
 
     // Start the program
     iteration();
+}
+
+function getRandomShape() {
+    return randomGetter([generateCircle, generateTriangle]);
 }
 
 /**
@@ -61,20 +65,27 @@ function generateTriangle() {
     const padding = 0.2;
 
     // Random point spawner, where points can spawn outside the canvas
-    const getPointAnywhere = () => getRandomPoint(-padding * canvasWidth, (1 + padding) * canvasWidth, -padding * canvasHeight, (1 + padding) * canvasHeight);
+    const getPointAnywhere = () => getRandomPoint(
+        -padding * canvasWidth, // xlb
+        (1 + padding) * canvasWidth, // xub
+        -padding * canvasHeight, // ylb
+        (1 + padding) * canvasHeight, // yub
+    );
 
     // Random point spawner, where the point is in the canvas
     const getPointInCanvas = () => getRandomPoint(0, canvasWidth, 0, canvasHeight);
 
-    const randomGetter = () => randomChance(1 / 2) ? getPointInCanvas() : getPointAnywhere();
-
     /* 
-    We want to make random triangles, but we want them to be "nice" (for how far you could call a triangle nice).
-    Let's start with getting point p1 from anywhere, inside or outside the canvas.
+    We want to make random triangles, but we want them to be "nice" (for how far you could call
+    a triangle nice). Let's start with getting point p1 from anywhere, inside or outside the canvas.
     */
     const p1 = getPointInCanvas();
-    const p2 = randomGetter();
-    const p3 = randomGetter();
+
+    // The two random getters for randomGetter
+    const callbacks = [getPointAnywhere, getPointInCanvas];
+
+    const p2 = randomGetter(callbacks);
+    const p3 = randomGetter(callbacks);
 
     return new Triangle(p1, p2, p3);
 }
@@ -109,20 +120,20 @@ function getScoreDiff(shape) {
     for (const { x, y } of dataFrame.loop()) {
         // The pixel color in the original painting
         const c = originalCanvas.getPixel(x, y);
-        
+
         // The pixel color in the current solution
         const c1 = productCanvas.getPixel(x, y);
 
         // The pixel color of the new shape
         const c2 = testingCanvas.getPixel(x, y);
-        
+
         const c0 = blend(c1, c2);
 
         if (c0.a === 0) continue;
 
         const score0 = score(c, c0);
         const score1 = score(c, c1);
-        
+
         const scoreDiff = score0 - score1;
 
         totalScoreDiff += scoreDiff;
@@ -139,9 +150,9 @@ function getScoreDiff(shape) {
  * @return {number}
  */
 function score(c0, c) {
-    return (c0.r - c.r)**2 + 
-           (c0.g - c.g)**2 +
-           (c0.b - c.b)**2;
+    return (c0.r - c.r) ** 2 +
+        (c0.g - c.g) ** 2 +
+        (c0.b - c.b) ** 2;
 }
 
 /**
@@ -158,15 +169,15 @@ function displayShape(shape, color) {
 function iteration() {
     const color = getRandomColor(0.1);
 
-    const circle = generateCircle();
+    const shape = getRandomShape();
 
-    displayShape(circle, color);
+    displayShape(shape, color);
 
-    const scoreDiff = getScoreDiff(circle);
+    const scoreDiff = getScoreDiff(shape);
 
     if (scoreDiff < 0) {
-        circle.draw(productCanvas, color);
+        shape.draw(productCanvas, color);
     }
-    
+
     requestAnimationFrame(iteration);
 }
