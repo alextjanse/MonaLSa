@@ -7,7 +7,7 @@ import {
     getRandomPoint,
     Point,
 } from './modules/math.js';
-import { randomInRange, randomGetter, splitRandomly, randomMultiplicants, randomSign } from './modules/utils.js';
+import { pickRandomly, randomInRange, randomMultiplicants, randomSign } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // Load the image
@@ -53,7 +53,7 @@ image.onload = () => {
 }
 
 function getRandomShape() {
-    return randomGetter([generateCircle, generateTriangle]);
+    return pickRandomly([generateCircle, generateTriangle])();
 }
 
 /**
@@ -181,7 +181,7 @@ function displayShape(shape, color) {
 }
 
 function iteration() {
-    const color = getRandomColor(0.1);
+    const color = getRandomColor(0.5);
 
     const shape = getRandomShape();
 
