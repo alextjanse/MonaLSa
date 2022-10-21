@@ -32,3 +32,56 @@ export const randomGetter = (callbacks) => {
     // Execute callback function at index i in the array
     return callbacks[i]();
 }
+
+/**
+ * Split an amount in a number of pieces randomly.
+ * @param {number} amount 
+ * @param {number} number 
+ * @return {number[]}
+ */
+export const splitRandomly = (amount, number) => {
+    let splits = new Array(number);
+
+    /* 
+    I'm not sure if this is properly randomly split, but I didn't bother
+    to do the maths on it. Let's just see the results.
+
+    Let all splits make a random "grab" between 0 and 1. That's where the
+    randomness comes from. Add these grabs up to a total, and then normalize
+    each grab by multiplying with 1 / total. Then the sum of splits will be
+    equal to 1, so we can then devide the amount we needed to split over the
+    given number.
+    */
+
+    let total = 0;
+
+    for (let i = 0; i < number; i++) {
+        const grab = Math.random();
+        splits[i] = grab;
+        total += grab;
+    }
+
+    const normalizer = 1 / total;
+
+    for (let i = 0; i < number; i++) {
+        splits[i] *= normalizer * amount;
+    }
+
+    return splits;
+}
+
+export const randomMultiplicants = (number) => {
+    const multiplicant = new Array(number);
+
+    let sum = 0;
+
+    for (let i = 0; i < number; i++) {
+        const value = Math.random();
+        multiplicant[i] = value;
+        sum += value;
+    }
+
+    let factor = 1 / sum;
+
+    return multiplicant.map(x => x * factor);
+}
