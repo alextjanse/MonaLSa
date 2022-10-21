@@ -1,3 +1,5 @@
+import { pickRandomly } from "./utils.js";
+
 /**
  * @constructor
  * @param {number} r [0..255]
@@ -6,27 +8,48 @@
  * @param {number} a [0..255] | [0..1]
  * @return {Color}
  */
-function Color(r, g, b, a) {
-    if (a > 1) {
-        a /= 255;
-    }
+class Color {
+    constructor(r, g, b, a) {
+        if (a > 1) {
+            a /= 255;
+        }
 
-    this.r = r;
-    this.g = g;
-    this.b = b;
-    this.a = a;
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+    }
 }
+
+// Source: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const r = parseInt(result[1], 16);
+    const g = parseInt(result[2], 16);
+    const b = parseInt(result[3], 16);
+
+    return new Color(r, g, b, 0);
+}
+
+// Source: https://www.schemecolor.com/mona-lisa-painting-colors.php
+const color1 = hexToRgb('727F4B');
+const color2 = hexToRgb('A9A569');
+const color3 = hexToRgb('E9C468');
+const color4 = hexToRgb('92692E');
+const color5 = hexToRgb('92692E');
+const color6 = hexToRgb('352524');
+const palette = [color1, color2, color3, color4, color5, color6];
 
 /**
  * Get random color, with given alpha level.
- * @param {Number} a alpha level
+ * @param {Number} alpha alpha level
  */
- function getRandomColor(a) {
-    const r = Math.floor(Math.random() * 255);
-    const g = Math.floor(Math.random() * 255);
-    const b = Math.floor(Math.random() * 255);
-    
-    return new Color(r, g, b, a);
+function getRandomColor(alpha) {
+    const color = pickRandomly(palette);
+
+    color.a = alpha;
+
+    return color;
 }
 
 /**
@@ -42,7 +65,7 @@ function blend(c1, c2) {
     const a = a1 + a2 * (1 - a1);
 
     if (a === 0) return new Color(0, 0, 0, 0);
-    
+
     const r = blendColorChannel(r1, a1, r2, a2, a);
     const g = blendColorChannel(g1, a1, g2, a2, a);
     const b = blendColorChannel(b1, a1, b2, a2, a);
