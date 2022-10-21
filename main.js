@@ -5,8 +5,9 @@ import {
     Rectangle,
     Circle,
     getRandomPoint,
+    Point,
 } from './modules/math.js';
-import { randomInRange, randomGetter } from './modules/utils.js';
+import { randomInRange, randomGetter, splitRandomly, randomMultiplicants, randomSign } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // Load the image
@@ -60,31 +61,45 @@ function getRandomShape() {
  * @return {Triangle}
  */
 function generateTriangle() {
-    // percentage of padding for spawn points of random points outside the canvas
-    const padding = 0.2;
-
-    // Random point spawner, where points can spawn outside the canvas
-    const getPointAnywhere = () => getRandomPoint(
-        -padding * canvasWidth, // xlb
-        (1 + padding) * canvasWidth, // xub
-        -padding * canvasHeight, // ylb
-        (1 + padding) * canvasHeight, // yub
-    );
-
-    // Random point spawner, where the point is in the canvas
-    const getPointInCanvas = () => getRandomPoint(0, canvasWidth, 0, canvasHeight);
-
     /* 
-    We want to make random triangles, but we want them to be "nice" (for how far you could call
-    a triangle nice). Let's start with getting point p1 from anywhere, inside or outside the canvas.
+    A triangle is defined by three points: p1, p2, and p3. We want nice triangles,
+    that aren't too large. So let's first decide on the area. The area of a triangle
+    is: A = 1/2 * a * b * sin(gamma), where a = (p1, p2), (p1, p3) and gamma = angle(p1).
     */
-    const p1 = getPointInCanvas();
 
-    // The two random getters for randomGetter
-    const callbacks = [getPointAnywhere, getPointInCanvas];
+    // Start by deciding on an area of the triangle. We don't want too large ones.
+    const area = randomInRange(10, 100);
 
-    const p2 = randomGetter(callbacks);
-    const p3 = randomGetter(callbacks);
+    // Set p1 as a random point on the canvas.
+    const p1 = getRandomPoint(0, canvasWidth, 0, canvasHeight)
+
+    const { x: x1, y: y1 } = p1;
+
+    // Calculate a random angle for gamma.
+    const gamma = Math.PI * Math.random();
+
+    let areaToSplit = 2 * area / Math.sin(gamma);
+
+    const [a, b] = randomMultiplicants(2);
+
+    const l12 = a * areaToSplit;
+    const l13 = b * areaToSplit;
+
+    // Random angle to cast towards p2 for
+    const angle1 = 2 * Math.PI * Math.random();
+
+    const x2 = x1 + Math.cos(angle1) * l12;
+    const y2 = y1 + Math.sin(angle1) * l12;
+
+    const p2 = new Point(x2, y2);
+
+    // Angle to cast to p3 from p1
+    const angle2 = angle1 + randomSign() * gamma;
+
+    const x3 = x1 + Math.cos(angle2) * l13;
+    const y3 = y1 + Math.cos(angle2) * l13;
+
+    const p3 = new Point(x3, y3);
 
     return new Triangle(p1, p2, p3);
 }
