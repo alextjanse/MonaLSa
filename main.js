@@ -78,12 +78,17 @@ function generateTriangle() {
     // Calculate a random angle for gamma.
     const gamma = Math.PI * Math.random();
 
-    let areaToSplit = 2 * area / Math.sin(gamma);
+    /* 
+    I lack a better name for this. It is the factor we need to
+    multiply a and b with to get the right side lengths to get
+    the area that was given.
+    */
+    let x = (2 * area / Math.sin(gamma))**(1 / 2);
 
     const [a, b] = randomMultiplicants(2);
 
-    const l12 = a * areaToSplit;
-    const l13 = b * areaToSplit;
+    const l12 = a * x;
+    const l13 = b * x;
 
     // Random angle to cast towards p2 for
     const angle1 = 2 * Math.PI * Math.random();
