@@ -30,13 +30,19 @@ class Canvas {
     }
 
     setDimensions(width, height) {
-        const { html } = this;
+        const { html, context } = this;
 
         this.width = width;
         this.height = height;
         
         html.width = width;
         html.height = height;
+
+        const black = new Color(0, 0, 0, 1);
+
+        this.setColor(black);
+        
+        context.fillRect(0, 0, width, height);
     }
 
     /** 

@@ -108,7 +108,7 @@ function generateTriangle() {
 }
 
 function generateCircle() {
-    const radius = randomInRange(5, 100);
+    const radius = randomInRange(5, 50);
     const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
 
     return new Circle(origin, radius);
@@ -154,14 +154,9 @@ function getScoreDiff(shape) {
 
         const c0 = blend(c1, c2);
 
-        if (c0.a === 0) continue;
+        if (c2.a === 0) continue;
 
-        const score0 = score(c, c0);
-        const score1 = score(c, c1);
-
-        const scoreDiff = score0 - score1;
-
-        totalScoreDiff += scoreDiff;
+        totalScoreDiff += getPixelScoreDiff(c, c1, c0);
     }
 
     return totalScoreDiff;
@@ -174,10 +169,26 @@ function getScoreDiff(shape) {
  * @param {Color} c The pixel color of the solution
  * @return {number}
  */
-function score(c0, c) {
-    return (c0.r - c.r) ** 2 +
-        (c0.g - c.g) ** 2 +
-        (c0.b - c.b) ** 2;
+function getPixelScoreDiff(c, c1, c0) {
+    const { r, g, b } = c;
+    const { r: r1, g: g1, b: b1 } = c1;
+    const { r: r0, g: g0, b: b0 } = c0;
+
+    // Calculate how much closer to the target we got. Negative = better.
+    const rFactor = Math.abs(r - r0) - Math.abs(r - r1);
+    const gFactor = Math.abs(g - g0) - Math.abs(g - g1);
+    const bFactor = Math.abs(b - b0) - Math.abs(b - b1);
+
+    let scoreDiff = 0;
+
+    // Spice. Just a random multiplier for if a color channel is worsening.
+    const penalty = 10;
+
+    scoreDiff += rFactor * (rFactor < 0 ? 1 : penalty);
+    scoreDiff += gFactor * (gFactor < 0 ? 1 : penalty);
+    scoreDiff += bFactor * (bFactor < 0 ? 1 : penalty);
+
+    return scoreDiff;
 }
 
 /**
