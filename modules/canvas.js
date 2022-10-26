@@ -63,7 +63,6 @@ class Canvas {
 
         const index = 4 * (y - y0) * width + (x - x0);
         
-        // c = [r, g, b, a]
         const c = data.slice(index, index + 4);
 
         return new Color(...c);

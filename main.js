@@ -68,7 +68,7 @@ function generateTriangle() {
     */
 
     // Start by deciding on an area of the triangle. We don't want too large ones.
-    const area = randomInRange(10, 100);
+    const area = randomInRange(5, 500);
 
     // Set p1 as a random point on the canvas.
     const p1 = getRandomPoint(0, canvasWidth, 0, canvasHeight)
