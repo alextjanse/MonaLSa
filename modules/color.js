@@ -1,4 +1,4 @@
-import { pickRandomly } from "./utils.js";
+import { pickRandomly, randomInRange } from "./utils.js";
 
 /**
  * @class
@@ -31,11 +31,28 @@ const setColorPalette = (palette) => {
  * @param {Number} alpha alpha level
  */
 function getRandomColor(alpha) {
-    const color = pickRandomly(colorPalette);
+    const yellow = new Color(255, 255, 0, alpha);
+    const white = new Color(255, 255, 255, alpha);
 
-    color.a = alpha;
+    return yellow;
+
+    const color = pickRandomly([yellow, white]);
+
+    // return generateColor(alpha);
+
+    // const color = pickRandomly(palette);
+
+    // color.a = alpha;
 
     return color;
+}
+
+function generateColor(alpha) {
+    const r = randomInRange(0, 255);
+    const g = randomInRange(0, 255);
+    const b = randomInRange(0, 255);
+    
+    return new Color(r, g, b, alpha);
 }
 
 /**

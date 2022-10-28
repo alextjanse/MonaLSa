@@ -38,9 +38,9 @@ class Canvas {
         html.width = width;
         html.height = height;
 
-        const black = new Color(0, 0, 0, 1);
+        const backgroundColor = new Color(255, 255, 255, 1);
 
-        this.setColor(black);
+        this.setColor(backgroundColor);
         
         context.fillRect(0, 0, width, height);
     }

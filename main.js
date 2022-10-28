@@ -70,7 +70,7 @@ function generateTriangle() {
     */
 
     // Start by deciding on an area of the triangle. We don't want too large ones.
-    const area = randomInRange(5, 500);
+    const area = randomInRange(10, 100);
 
     // Set p1 as a random point on the canvas.
     const p1 = getRandomPoint(0, canvasWidth, 0, canvasHeight);
@@ -104,7 +104,9 @@ function generateTriangle() {
 
     const p3 = new Point(x3, y3);
 
-    return new Triangle(p1, p2, p3);
+    const triangle = new Triangle(p1, p2, p3);
+
+    return triangle;
 }
 
 function generateCircle() {
@@ -144,19 +146,19 @@ function getScoreDiff(shape) {
 
     for (const { x, y } of dataFrame.loop()) {
         // The pixel color in the original painting
-        const c = originalCanvas.getPixel(x, y);
+        const cOriginal = originalCanvas.getPixel(x, y);
 
         // The pixel color in the current solution
-        const c1 = productCanvas.getPixel(x, y);
+        const cCanvas = productCanvas.getPixel(x, y);
 
         // The pixel color of the new shape
-        const c2 = testingCanvas.getPixel(x, y);
+        const cShape = testingCanvas.getPixel(x, y);
 
-        const c0 = blend(c1, c2);
+        if (cShape.a === 0) continue;
 
-        if (c2.a === 0) continue;
+        const cNew = blend(cCanvas, cShape);
 
-        totalScoreDiff += getPixelScoreDiff(c, c1, c0);
+        totalScoreDiff += getPixelScoreDiff(cOriginal, cCanvas, cNew);
     }
 
     return totalScoreDiff;
@@ -165,24 +167,26 @@ function getScoreDiff(shape) {
 /**
  * Get the score of a pixel color by calculating the square sum of the
  * difference between the original and the solution color channels.
- * @param {Color} c0 The pixel color of the original painting
- * @param {Color} c The pixel color of the solution
+ * @param {Color} cNew The pixel color of the original painting
+ * @param {Color} cOriginal The pixel color of the solution
  * @return {number}
  */
-function getPixelScoreDiff(c, c1, c0) {
-    const { r, g, b } = c;
-    const { r: r1, g: g1, b: b1 } = c1;
-    const { r: r0, g: g0, b: b0 } = c0;
+function getPixelScoreDiff(cOriginal, cCanvas, cNew) {
+    const { r: rOriginal, g: gOriginal, b: bOriginal } = cOriginal;
+    const { r: rCanvas, g: gCanvas, b: bCanvas } = cCanvas;
+    const { r: rNew, g: gNew, b: bNew } = cNew;
 
     // Calculate how much closer to the target we got. Negative = better.
-    const rFactor = Math.abs(r - r0) - Math.abs(r - r1);
-    const gFactor = Math.abs(g - g0) - Math.abs(g - g1);
-    const bFactor = Math.abs(b - b0) - Math.abs(b - b1);
+    const factor = (cO, cC, cN) => Math.abs(cO - cN) - Math.abs(cO - cC);
+
+    const rFactor = factor(rOriginal, rCanvas, rNew);
+    const gFactor = factor(gOriginal, gCanvas, gNew);
+    const bFactor = factor(bOriginal, bCanvas, bNew);
 
     let scoreDiff = 0;
 
     // Spice. Just a random multiplier for if a color channel is worsening.
-    const penalty = 10;
+    const penalty = 3;
 
     scoreDiff += rFactor * (rFactor < 0 ? 1 : penalty);
     scoreDiff += gFactor * (gFactor < 0 ? 1 : penalty);
@@ -203,7 +207,7 @@ function displayShape(shape, color) {
 }
 
 function iteration() {
-    const color = getRandomColor(0.5);
+    const color = getRandomColor(1);
 
     const shape = getRandomShape();
 
