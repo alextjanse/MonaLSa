@@ -1,3 +1,4 @@
+import BoundingBox from './boundingBox.js';
 import { Color } from './color.js';
 import { Rectangle } from './math.js';
 
@@ -19,7 +20,6 @@ class Canvas {
         this.html = document.getElementById(id);
         /** @type {CanvasRenderingContext2D} */
         this.context = this.html.getContext('2d', { willReadFrequently: true });
-        this.context.will
 
         this.width = null;
         this.height = null;
@@ -133,7 +133,7 @@ class OriginalCanvas extends Canvas {
     setDimensions(width, height) {
         super.setDimensions(width, height);
 
-        this.dataFrame = new Rectangle(0, 0, width, height);
+        this.dataFrame = new BoundingBox(0, 0, width, height);
     }
 
     drawImage() {

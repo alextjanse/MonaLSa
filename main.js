@@ -13,7 +13,6 @@ import { pickRandomly, randomInRange, randomFactors, randomSign } from './module
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // These variables are for all canvasses, so let's just store them here.
-
 /** @type {number} Width of the canvasses */
 let canvasWidth;
 let canvasHeight;
@@ -22,16 +21,12 @@ let canvasHeight;
 let canvasBoundingBox;
 
 // Create the three canvasses
-
 /** The left canvas, with the original painting */
 const originalCanvas = new OriginalCanvas('original', image);
-
 /** The middle canvas, with our current solution */
 const productCanvas = new Canvas('current');
-
 /** The right canvas, for testing purposes and displaying triangles */
 const testingCanvas = new Canvas('triangle');
-
 // Very unnecessary array of our three canvasses, but fun to do an Array.forEach
 const canvasses = [originalCanvas, productCanvas, testingCanvas];
 
@@ -39,6 +34,7 @@ image.onload = () => {
     // Image is loaded, set width and height wherever it should be stored
     ({ width: canvasWidth, height: canvasHeight } = image);
 
+    // Set
     canvasBoundingBox = new Rectangle(0, 0, canvasWidth, canvasHeight);
 
     canvasses.forEach(canvas => canvas.setDimensions(canvasWidth, canvasHeight));
@@ -110,8 +106,8 @@ function generateTriangle() {
 }
 
 function generateCircle() {
-    const radius = randomInRange(5, 50);
     const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
+    const radius = randomInRange(5, 50);
 
     return new Circle(origin, radius);
 }
@@ -207,7 +203,7 @@ function displayShape(shape, color) {
 }
 
 function iteration() {
-    const color = getRandomColor(1);
+    const color = getRandomColor(0.5);
 
     const shape = getRandomShape();
 

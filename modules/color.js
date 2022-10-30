@@ -31,18 +31,9 @@ const setColorPalette = (palette) => {
  * @param {Number} alpha alpha level
  */
 function getRandomColor(alpha) {
-    const yellow = new Color(255, 255, 0, alpha);
-    const white = new Color(255, 255, 255, alpha);
+    const color = pickRandomly(colorPalette);
 
-    return yellow;
-
-    const color = pickRandomly([yellow, white]);
-
-    // return generateColor(alpha);
-
-    // const color = pickRandomly(palette);
-
-    // color.a = alpha;
+    color.a = alpha;
 
     return color;
 }

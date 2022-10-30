@@ -1,6 +1,6 @@
 import { setPalette, Color } from './color.js';
 
-import data from '../images/mona_lisa.json' assert { type: 'json' };
+import data from '../images/color_triangle.json' assert { type: 'json' };
 
 const { url, palette } = data;
 
