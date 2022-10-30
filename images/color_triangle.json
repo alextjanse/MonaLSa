@@ -1,0 +1,9 @@
+{
+    "url": "./images/color_triangle.png",
+    "palette": [
+        "000000",
+        "0000FF",
+        "00FF00",
+        "FF0000"
+    ]
+}

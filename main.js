@@ -1,3 +1,5 @@
+import { image } from './modules/imageLoader.js';
+
 import { Shape2D } from './modules/shapes/shape.js';
 import { Color, getRandomColor, blend } from './modules/color.js';
 import {
@@ -9,10 +11,6 @@ import {
 } from './modules/math.js';
 import { pickRandomly, randomInRange, randomMultiplicants, randomSign } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
-
-// Load the image
-const image = new Image();
-image.src = './images/original.jpeg';
 
 // These variables are for all canvasses, so let's just store them here.
 
