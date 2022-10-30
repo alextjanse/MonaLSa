@@ -1,0 +1,13 @@
+{
+    "url": "./images/color_wheel.png",
+    "palette": [
+        "000000",
+        "0000FF",
+        "00FF00",
+        "00FFFF",
+        "FF0000",
+        "FF00FF",
+        "FFFF00",
+        "FFFFFF"
+    ]
+}

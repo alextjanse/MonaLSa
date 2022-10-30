@@ -1,12 +1,11 @@
 import { pickRandomly } from "./utils.js";
 
 /**
- * @constructor
- * @param {number} r [0..255]
- * @param {number} g [0..255]
- * @param {number} b [0..255]
- * @param {number} a [0..255] | [0..1]
- * @return {Color}
+ * @class
+ * @prop {number} r [0..255]
+ * @prop {number} g [0..255]
+ * @prop {number} b [0..255]
+ * @prop {number} a [0..255] | [0..1]
  */
 class Color {
     constructor(r, g, b, a) {
@@ -21,31 +20,18 @@ class Color {
     }
 }
 
-// Source: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    const r = parseInt(result[1], 16);
-    const g = parseInt(result[2], 16);
-    const b = parseInt(result[3], 16);
+let colorPalette;
 
-    return new Color(r, g, b, 0);
+const setColorPalette = (palette) => {
+    colorPalette = palette;
 }
-
-// Source: https://www.schemecolor.com/mona-lisa-painting-colors.php
-const color1 = hexToRgb('727F4B');
-const color2 = hexToRgb('A9A569');
-const color3 = hexToRgb('E9C468');
-const color4 = hexToRgb('92692E');
-const color5 = hexToRgb('92692E');
-const color6 = hexToRgb('352524');
-const palette = [color1, color2, color3, color4, color5, color6];
 
 /**
  * Get random color, with given alpha level.
  * @param {Number} alpha alpha level
  */
 function getRandomColor(alpha) {
-    const color = pickRandomly(palette);
+    const color = pickRandomly(colorPalette);
 
     color.a = alpha;
 
@@ -73,4 +59,4 @@ function blend(cB, cS) {
     return new Color(r, g, b, a);
 }
 
-export { Color, getRandomColor, blend };
+export { Color, getRandomColor, blend, setColorPalette as setPalette };
