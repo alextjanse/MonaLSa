@@ -9,7 +9,7 @@ import {
     getRandomPoint,
     Point,
 } from './modules/math.js';
-import { pickRandomly, randomInRange, randomMultiplicants, randomSign } from './modules/utils.js';
+import { pickRandomly, randomInRange, randomFactors, randomSign } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 
 // These variables are for all canvasses, so let's just store them here.
@@ -51,7 +51,11 @@ image.onload = () => {
 }
 
 function getRandomShape() {
-    return pickRandomly([generateCircle, generateTriangle])();
+    return pickRandomly([
+        generateCircle,
+        generateTriangle,
+        generateRectangle,
+    ])();
 }
 
 /**
@@ -77,30 +81,26 @@ function generateTriangle() {
     const gamma = Math.PI * Math.random();
 
     /* 
-    I lack a better name for this. It is the factor we need to
-    multiply a and b with to get the right side lengths to get
-    the area that was given.
+    area = 1/2 a b sin(gamma)
+    rest = a b = 2 * area / sin(gamma)
     */
-    let x = (2 * area / Math.sin(gamma))**(1 / 2);
+    let rest = 2 * area / Math.sin(gamma);
 
-    const [a, b] = randomMultiplicants(2);
-
-    const l12 = a * x;
-    const l13 = b * x;
+    const [a, b] = randomFactors(rest, 2);
 
     // Random angle to cast towards p2 for
     const angle1 = 2 * Math.PI * Math.random();
 
-    const x2 = x1 + Math.cos(angle1) * l12;
-    const y2 = y1 + Math.sin(angle1) * l12;
+    const x2 = x1 + Math.cos(angle1) * a;
+    const y2 = y1 + Math.sin(angle1) * a;
 
     const p2 = new Point(x2, y2);
 
     // Angle to cast to p3 from p1
     const angle2 = angle1 + randomSign() * gamma;
 
-    const x3 = x1 + Math.cos(angle2) * l13;
-    const y3 = y1 + Math.cos(angle2) * l13;
+    const x3 = x1 + Math.cos(angle2) * b;
+    const y3 = y1 + Math.cos(angle2) * b;
 
     const p3 = new Point(x3, y3);
 
@@ -112,6 +112,14 @@ function generateCircle() {
     const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
 
     return new Circle(origin, radius);
+}
+
+function generateRectangle() {
+    const area = randomInRange(10, 100);
+    const [width, height] = randomFactors(area, 2);
+
+    const { x: x0, y: y0 } = getRandomPoint(0, canvasWidth - width, 0, canvasHeight - height);
+    return new Rectangle(x0, y0, width, height);
 }
 
 /**

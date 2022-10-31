@@ -74,6 +74,15 @@ class Canvas {
         context.clearRect(0, 0, width, height);
     }
 
+    fillRectangle(rectangle, color) {
+        const { context } = this;
+        const { x0, y0, width, height } = rectangle;
+
+        this.setColor(color);
+
+        context.fillRect(x0, y0, width, height);
+    }
+
     fillPath(points, color) {
         const { context } = this;
 

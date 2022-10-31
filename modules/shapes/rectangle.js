@@ -51,9 +51,7 @@ class Rectangle extends Shape2D {
      * @param {Color} color The color to be drawn in.
      */
     draw(canvas, color) {
-        const { topLeft, topRight, bottomLeft, bottomRight } = this;
-
-        canvas.fillPath([topLeft, topRight, bottomLeft, bottomRight], color);
+        canvas.fillRectangle(this, color);
     }
 
     equals(other) {

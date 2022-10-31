@@ -56,27 +56,36 @@ export const splitRandomly = (amount, number) => {
     return splits;
 }
 
-export const randomMultiplicants = (number) => {
-    const multiplicant = new Array(number);
+export const randomFactors = (targetProduct, number) => {
+    /* 
+    a * b * c * ... * n = p
+    a_ * b_ * c_ * ... * n_ = p_target
+
+    p * (p_target / p) = p_target
+
+    f = (p_target / p) ^ (1 / n)
+
+    f * a = a_
+
+    f * a * f * b * f * c * ... * f * n =
+    a * b * c * ... * n * f^n =
+    p * ((p_target / p) ^ (1 / n)) ^ n =
+    p * (p_target / p) = p_target
+    */
+
+    const factors = new Array(number);
 
     let product = 1;
 
     for (let i = 0; i < number; i++) {
         const value = Math.random();
-        multiplicant[i] = value;
+        factors[i] = value;
         product *= value;
     }
 
-    /*
-    Factor is 1 / n-root of the product. If we multiply all multiplicants
-    with this, we get:
-    a_1 * (1 / p^(1/n)) * ... * a_n * (1 / p^(1/n)) ... =
-    a_1 * ... * a_n * (1 / p^(1/n))^n =
-    a_1 * ... * a_n * (1 / p) = 1
-    */
-    let factor = product**(-1 / number);
+    let factor = (targetProduct / product) ** (1 / number);
 
-    return multiplicant.map(x => x * factor);
+    return factors.map(x => x * factor);
 }
 
 export const pickRandomly = (array) => {
