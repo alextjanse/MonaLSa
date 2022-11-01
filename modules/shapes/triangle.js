@@ -61,7 +61,11 @@ class Triangle extends Shape2D {
         const extremePoints = [];
         
         // Add all point that are in the canvas to the extreme points
-        extremePoints.push(...points.filter(p => isPointInRectangle(p, canvasBoundingBox)));
+        points.forEach(p => {
+            if (isPointInRectangle(p, canvasBoundingBox)) {
+                extremePoints.push(p);
+            }
+        });
 
         // Add all canvas intersections to the extreme point
         sides.forEach(l => extremePoints.push(...lineSegmentRectangleIntersection(l, canvasBoundingBox)));

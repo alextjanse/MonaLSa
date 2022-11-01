@@ -2,6 +2,7 @@ import { Shape2D } from './shape.js';
 import { Point, LineSegment } from '../math.js';
 import { Color } from '../color.js';
 import { Canvas } from '../canvas.js';
+import BoundingBox from '../boundingBox.js';
 
 /**
  * Class representing a rectangle.
@@ -37,6 +38,23 @@ class Rectangle extends Shape2D {
         this.bottom = new LineSegment(this.bottomLeft, this.bottomRight);
         this.left = new LineSegment(this.topLeft, this.bottomLeft);
         this.right = new LineSegment(this.topRight, this.bottomRight);
+    }
+
+    canvasIntersection(canvasBoundingBox) {
+        const { x0: x, y0: y, width: w, height: h } = this;
+        const { x0, y0, width, height } = canvasBoundingBox;
+
+        // Get the upper left point of the intersection by checking for out canvas
+        const xLeft = Math.max(x, x0);
+        const yUp = Math.max(y, y0);
+
+        // Take the bottom right point of the intersection, and subtract upper left point
+        return new BoundingBox(
+            Math.floor(xLeft), // left X
+            Math.floor(yUp), // upper Y
+            Math.ceil(Math.min(xLeft + w, width) - xLeft), // right X - left X = width
+            Math.ceil(Math.min(yUp + h, height) - yUp), // bottom Y - upper Y = height
+        );
     }
 
     area() {
