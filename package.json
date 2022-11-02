@@ -1,0 +1,26 @@
+{
+  "name": "monalsa",
+  "version": "1.0.0",
+  "description": "Local Search learns how to copy art",
+  "main": "main.js",
+  "scripts": {
+    "run": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alextjanse/MonaLSa.git"
+  },
+  "keywords": [
+    "Local",
+    "Search"
+  ],
+  "author": "Alex Janse",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alextjanse/MonaLSa/issues"
+  },
+  "homepage": "https://github.com/alextjanse/MonaLSa#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
