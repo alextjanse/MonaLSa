@@ -11,13 +11,14 @@ import {
 } from './modules/math.js';
 import { pickRandomly, randomInRange, randomFactors, randomSign } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
+import BoundingBox from './modules/boundingBox.js';
 
 // These variables are for all canvasses, so let's just store them here.
 /** @type {number} Width of the canvasses */
 let canvasWidth;
 let canvasHeight;
 
-/** @type {Rectangle} Bounding box of the canvasses */
+/** @type {BoundingBox} Bounding box of the canvasses */
 let canvasBoundingBox;
 
 // Create the three canvasses
@@ -106,8 +107,10 @@ function generateTriangle() {
 }
 
 function generateCircle() {
+    const area = randomInRange(10, 100);
+    
     const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
-    const radius = randomInRange(5, 50);
+    const radius = Math.sqrt(area / Math.PI);
 
     return new Circle(origin, radius);
 }
@@ -203,7 +206,7 @@ function displayShape(shape, color) {
 }
 
 function iteration() {
-    const color = getRandomColor(0.5);
+    const color = getRandomColor(0.1);
 
     const shape = getRandomShape();
 

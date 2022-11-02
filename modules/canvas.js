@@ -38,7 +38,7 @@ class Canvas {
         html.width = width;
         html.height = height;
 
-        const backgroundColor = new Color(255, 255, 255, 1);
+        const backgroundColor = new Color(0, 0, 0, 1);
 
         this.setColor(backgroundColor);
         
@@ -67,7 +67,7 @@ class Canvas {
     getPixel(x, y) {
         const { data, dataFrame: { x0, y0, width } } = this;
 
-        const index = 4 * (y - y0) * width + (x - x0);
+        const index = 4 *((y - y0) * width + (x - x0));
         
         const c = data.slice(index, index + 4);
 
