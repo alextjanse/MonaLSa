@@ -4,7 +4,7 @@
   "description": "Local Search learns how to copy art",
   "main": "main.js",
   "scripts": {
-    "run": "node app.js"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
