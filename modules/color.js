@@ -1,4 +1,4 @@
-import { pickRandomly } from "./utils.js";
+import { pickRandomly, randomInRange } from "./utils.js";
 
 /**
  * @class
@@ -36,6 +36,14 @@ function getRandomColor(alpha) {
     color.a = alpha;
 
     return color;
+}
+
+function generateColor(alpha) {
+    const r = randomInRange(0, 255);
+    const g = randomInRange(0, 255);
+    const b = randomInRange(0, 255);
+    
+    return new Color(r, g, b, alpha);
 }
 
 /**

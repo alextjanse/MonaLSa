@@ -11,27 +11,23 @@ import {
 } from './modules/math.js';
 import { pickRandomly, randomInRange, randomFactors, randomSign } from './modules/utils.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
+import BoundingBox from './modules/boundingBox.js';
 
 // These variables are for all canvasses, so let's just store them here.
-
 /** @type {number} Width of the canvasses */
 let canvasWidth;
 let canvasHeight;
 
-/** @type {Rectangle} Bounding box of the canvasses */
+/** @type {BoundingBox} Bounding box of the canvasses */
 let canvasBoundingBox;
 
 // Create the three canvasses
-
 /** The left canvas, with the original painting */
 const originalCanvas = new OriginalCanvas('original', image);
-
 /** The middle canvas, with our current solution */
 const productCanvas = new Canvas('current');
-
 /** The right canvas, for testing purposes and displaying triangles */
 const testingCanvas = new Canvas('triangle');
-
 // Very unnecessary array of our three canvasses, but fun to do an Array.forEach
 const canvasses = [originalCanvas, productCanvas, testingCanvas];
 
@@ -39,6 +35,7 @@ image.onload = () => {
     // Image is loaded, set width and height wherever it should be stored
     ({ width: canvasWidth, height: canvasHeight } = image);
 
+    // Set
     canvasBoundingBox = new Rectangle(0, 0, canvasWidth, canvasHeight);
 
     canvasses.forEach(canvas => canvas.setDimensions(canvasWidth, canvasHeight));
@@ -70,7 +67,7 @@ function generateTriangle() {
     */
 
     // Start by deciding on an area of the triangle. We don't want too large ones.
-    const area = randomInRange(5, 500);
+    const area = randomInRange(10, 100);
 
     // Set p1 as a random point on the canvas.
     const p1 = getRandomPoint(0, canvasWidth, 0, canvasHeight);
@@ -104,12 +101,16 @@ function generateTriangle() {
 
     const p3 = new Point(x3, y3);
 
-    return new Triangle(p1, p2, p3);
+    const triangle = new Triangle(p1, p2, p3);
+
+    return triangle;
 }
 
 function generateCircle() {
-    const radius = randomInRange(5, 100);
+    const area = randomInRange(10, 100);
+    
     const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
+    const radius = Math.sqrt(area / Math.PI);
 
     return new Circle(origin, radius);
 }
@@ -144,24 +145,19 @@ function getScoreDiff(shape) {
 
     for (const { x, y } of dataFrame.loop()) {
         // The pixel color in the original painting
-        const c = originalCanvas.getPixel(x, y);
+        const cOriginal = originalCanvas.getPixel(x, y);
 
         // The pixel color in the current solution
-        const c1 = productCanvas.getPixel(x, y);
+        const cCanvas = productCanvas.getPixel(x, y);
 
         // The pixel color of the new shape
-        const c2 = testingCanvas.getPixel(x, y);
+        const cShape = testingCanvas.getPixel(x, y);
 
-        const c0 = blend(c1, c2);
+        if (cShape.a === 0) continue;
 
-        if (c0.a === 0) continue;
+        const cNew = blend(cCanvas, cShape);
 
-        const score0 = score(c, c0);
-        const score1 = score(c, c1);
-
-        const scoreDiff = score0 - score1;
-
-        totalScoreDiff += scoreDiff;
+        totalScoreDiff += getPixelScoreDiff(cOriginal, cCanvas, cNew);
     }
 
     return totalScoreDiff;
@@ -170,14 +166,32 @@ function getScoreDiff(shape) {
 /**
  * Get the score of a pixel color by calculating the square sum of the
  * difference between the original and the solution color channels.
- * @param {Color} c0 The pixel color of the original painting
- * @param {Color} c The pixel color of the solution
+ * @param {Color} cNew The pixel color of the original painting
+ * @param {Color} cOriginal The pixel color of the solution
  * @return {number}
  */
-function score(c0, c) {
-    return (c0.r - c.r) ** 2 +
-        (c0.g - c.g) ** 2 +
-        (c0.b - c.b) ** 2;
+function getPixelScoreDiff(cOriginal, cCanvas, cNew) {
+    const { r: rOriginal, g: gOriginal, b: bOriginal } = cOriginal;
+    const { r: rCanvas, g: gCanvas, b: bCanvas } = cCanvas;
+    const { r: rNew, g: gNew, b: bNew } = cNew;
+
+    // Calculate how much closer to the target we got. Negative = better.
+    const factor = (cO, cC, cN) => Math.abs(cO - cN) - Math.abs(cO - cC);
+
+    const rFactor = factor(rOriginal, rCanvas, rNew);
+    const gFactor = factor(gOriginal, gCanvas, gNew);
+    const bFactor = factor(bOriginal, bCanvas, bNew);
+
+    let scoreDiff = 0;
+
+    // Spice. Just a random multiplier for if a color channel is worsening.
+    const penalty = 3;
+
+    scoreDiff += rFactor * (rFactor < 0 ? 1 : penalty);
+    scoreDiff += gFactor * (gFactor < 0 ? 1 : penalty);
+    scoreDiff += bFactor * (bFactor < 0 ? 1 : penalty);
+
+    return scoreDiff;
 }
 
 /**
@@ -192,7 +206,7 @@ function displayShape(shape, color) {
 }
 
 function iteration() {
-    const color = getRandomColor(0.5);
+    const color = getRandomColor(0.1);
 
     const shape = getRandomShape();
 

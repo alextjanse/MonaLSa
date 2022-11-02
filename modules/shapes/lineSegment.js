@@ -17,7 +17,7 @@ import { Point } from '../math.js';
     length() {
         const { p: { x: x1, y: y1 }, q: { x: x2, y: y2 } } = this;
 
-        Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+        return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     }
 
     equals(other) {

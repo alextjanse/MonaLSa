@@ -1,3 +1,4 @@
+import BoundingBox from './boundingBox.js';
 import { Color } from './color.js';
 import { Rectangle } from './math.js';
 
@@ -19,7 +20,6 @@ class Canvas {
         this.html = document.getElementById(id);
         /** @type {CanvasRenderingContext2D} */
         this.context = this.html.getContext('2d', { willReadFrequently: true });
-        this.context.will
 
         this.width = null;
         this.height = null;
@@ -30,13 +30,19 @@ class Canvas {
     }
 
     setDimensions(width, height) {
-        const { html } = this;
+        const { html, context } = this;
 
         this.width = width;
         this.height = height;
         
         html.width = width;
         html.height = height;
+
+        const backgroundColor = new Color(0, 0, 0, 1);
+
+        this.setColor(backgroundColor);
+        
+        context.fillRect(0, 0, width, height);
     }
 
     /** 
@@ -61,7 +67,7 @@ class Canvas {
     getPixel(x, y) {
         const { data, dataFrame: { x0, y0, width } } = this;
 
-        const index = 4 * (y - y0) * width + (x - x0);
+        const index = 4 *((y - y0) * width + (x - x0));
         
         const c = data.slice(index, index + 4);
 
@@ -127,7 +133,7 @@ class OriginalCanvas extends Canvas {
     setDimensions(width, height) {
         super.setDimensions(width, height);
 
-        this.dataFrame = new Rectangle(0, 0, width, height);
+        this.dataFrame = new BoundingBox(0, 0, width, height);
     }
 
     drawImage() {
