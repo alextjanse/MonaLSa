@@ -26,11 +26,17 @@ const setColorPalette = (palette) => {
     colorPalette = palette;
 }
 
+function generateColor(parameters) {
+    const alpha = parameters.alpha;
+
+    return generateRandomColor(alpha);
+}
+
 /**
  * Get random color, with given alpha level.
  * @param {Number} alpha alpha level
  */
-function getRandomColor(alpha) {
+function pickRandomColorFromPalette(alpha) {
     const color = pickRandomly(colorPalette);
 
     color.a = alpha;
@@ -38,10 +44,10 @@ function getRandomColor(alpha) {
     return color;
 }
 
-function generateColor(alpha) {
-    const r = randomInRange(0, 255);
-    const g = randomInRange(0, 255);
-    const b = randomInRange(0, 255);
+function generateRandomColor(alpha) {
+    const r = Math.floor(randomInRange(0, 256));
+    const g = Math.floor(randomInRange(0, 256));
+    const b = Math.floor(randomInRange(0, 256));
     
     return new Color(r, g, b, alpha);
 }
@@ -67,4 +73,4 @@ function blend(cB, cS) {
     return new Color(r, g, b, a);
 }
 
-export { Color, getRandomColor, blend, setColorPalette as setPalette };
+export { Color, generateColor, blend, setColorPalette as setPalette };
