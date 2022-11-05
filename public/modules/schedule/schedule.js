@@ -22,7 +22,7 @@ class Schedule {
         if (loopEnd) {
             const lastItem = scheduleItems[scheduleItems.length - 1];
             
-            while (true) { 
+            while (true) {
                 yield* lastItem.iteration();
             }
         }

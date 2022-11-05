@@ -56,40 +56,49 @@ function initialize() {
     const parameters0 = new ParameterSet(
         canvasFocusField,
         {
-            areaLb: 1000,
-            areaUb: 10000,
+            areaLb: 500,
+            areaUb: 1000,
         },
         {
             alpha: 0.1,
         },
+        {
+            penalty: 1,
+        },
     );
-    const scheduleItem0 = new ScheduleItem(parameters0, 1000);
+    const scheduleItem0 = new ScheduleItem(parameters0, 10000);
 
     const parameters1 = new ParameterSet(
         canvasFocusField,
         {
-            areaLb: 100,
-            areaUb: 1000,
+            areaLb: 50,
+            areaUb: 100,
         },
         {
-            alpha: 0.3,
+            alpha: 0.1,
+        },
+        {
+            penalty: 3,
         },
     );
-    const scheduleItem1 = new ScheduleItem(parameters1, 1000);
+    const scheduleItem1 = new ScheduleItem(parameters1, 10000);
 
     const parameters2 = new ParameterSet(
         canvasFocusField,
         {
-            areaLb: 10,
-            areaUb: 100,
+            areaLb: 5,
+            areaUb: 25,
         },
         {
-            alpha: 0.5,
+            alpha: 0.1,
+        },
+        {
+            penalty: 5,
         },
     );
-    const scheduleItem2 = new ScheduleItem(parameters2, 1000);
+    const scheduleItem2 = new ScheduleItem(parameters2, 10000);
 
-    schedule = new Schedule([scheduleItem0, scheduleItem1, scheduleItem2], true);
+    schedule = new Schedule([scheduleItem0, scheduleItem1, scheduleItem2], false);
     scheduleIterator = schedule.iteration();
     
     loop();
@@ -107,10 +116,11 @@ function loop() {
 
 /**
  * Get the score difference of drawing the triangle in the solution.
- * @param {Shape2D} shape 
+ * @param {Shape2D} shape The new shape
+ * @param {ParameterSet} parameters The parameters, for the penalty parameters
  * @return {number}
  */
-function getScoreDiff(shape) {
+function getScoreDiff(shape, parameters) {
     const dataFrame = shape.canvasIntersection(canvasBoundingBox);
 
     // Get the image data of the bounding box
@@ -126,20 +136,21 @@ function getScoreDiff(shape) {
     let totalScoreDiff = 0;
 
     for (const { x, y } of dataFrame.loop()) {
+        // The pixel color of the new shape
+        const cShape = testingCanvas.getPixel(x, y);
+
+        // This pixel isn't being drawn on by the shape, go to the next pixel
+        if (cShape.a === 0) continue;
+
         // The pixel color in the original painting
         const cOriginal = originalCanvas.getPixel(x, y);
 
         // The pixel color in the current solution
         const cCanvas = productCanvas.getPixel(x, y);
 
-        // The pixel color of the new shape
-        const cShape = testingCanvas.getPixel(x, y);
-
-        if (cShape.a === 0) continue;
-
         const cNew = blend(cCanvas, cShape);
 
-        totalScoreDiff += getPixelScoreDiff(cOriginal, cCanvas, cNew);
+        totalScoreDiff += getPixelScoreDiff(cOriginal, cCanvas, cNew, parameters);
     }
 
     return totalScoreDiff;
@@ -148,14 +159,17 @@ function getScoreDiff(shape) {
 /**
  * Get the score of a pixel color by calculating the square sum of the
  * difference between the original and the solution color channels.
- * @param {Color} cNew The pixel color of the original painting
- * @param {Color} cOriginal The pixel color of the solution
+ * @param {Color} cOriginal The pixel color of the original
+ * @param {Color} cCanvas The pixel color of the current solution
+ * @param {Color} cNew The pixel color the new shape
+ * @param {ParameterSet} parameters The parameters for penalty parameters
  * @return {number}
  */
-function getPixelScoreDiff(cOriginal, cCanvas, cNew) {
+function getPixelScoreDiff(cOriginal, cCanvas, cNew, parameters) {
     const { r: rOriginal, g: gOriginal, b: bOriginal } = cOriginal;
     const { r: rCanvas, g: gCanvas, b: bCanvas } = cCanvas;
     const { r: rNew, g: gNew, b: bNew } = cNew;
+    const { penaltyParameters: { penalty } } = parameters;
 
     // Calculate how much closer to the target we got. Negative = better.
     const factor = (cO, cC, cN) => Math.abs(cO - cN) - Math.abs(cO - cC);
@@ -165,9 +179,6 @@ function getPixelScoreDiff(cOriginal, cCanvas, cNew) {
     const bFactor = factor(bOriginal, bCanvas, bNew);
 
     let scoreDiff = 0;
-
-    // Spice. Just a random multiplier for if a color channel is worsening.
-    const penalty = 3;
 
     scoreDiff += rFactor * (rFactor < 0 ? 1 : penalty);
     scoreDiff += gFactor * (gFactor < 0 ? 1 : penalty);
@@ -181,6 +192,10 @@ let alpha = 0.95;
 let i = 0;
 let k = 100;
 
+/** 
+ * Do an iteration of the Simulated Annealing.
+ * @param {ParameterSet} parameters The parameters for the generators and such
+ */
 function simulatedAnnealing(parameters) {
     const shape = generateShape(parameters);
     const color = generateColor(parameters);
@@ -189,9 +204,11 @@ function simulatedAnnealing(parameters) {
     testingCanvas.clear();
     shape.draw(testingCanvas, color);
 
-    const scoreDiff = getScoreDiff(shape);
+    const scoreDiff = getScoreDiff(shape, parameters);
 
-    if (scoreDiff < 0 || randomChance(Math.E**(-scoreDiff / temperature))) {
+    if (scoreDiff < 0) {
+        shape.draw(productCanvas, color);
+    } else if (randomChance(Math.E**(-scoreDiff / temperature))) {
         shape.draw(productCanvas, color);
     } else {
         // Neighbor not accepted.
