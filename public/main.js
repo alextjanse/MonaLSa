@@ -75,7 +75,7 @@ function initialize() {
             areaUb: 100,
         },
         {
-            alpha: 0.1,
+            alpha: 0.3,
         },
         {
             penalty: 3,
@@ -90,7 +90,7 @@ function initialize() {
             areaUb: 25,
         },
         {
-            alpha: 0.1,
+            alpha: 0.5,
         },
         {
             penalty: 5,
@@ -98,7 +98,7 @@ function initialize() {
     );
     const scheduleItem2 = new ScheduleItem(parameters2, 10000);
 
-    schedule = new Schedule([scheduleItem0, scheduleItem1, scheduleItem2], false);
+    schedule = new Schedule([scheduleItem0, scheduleItem1, scheduleItem2], true);
     scheduleIterator = schedule.iteration();
     
     loop();
