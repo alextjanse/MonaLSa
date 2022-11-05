@@ -1,25 +1,28 @@
 import { image } from './modules/imageLoader.js';
-
+import Schedule from './modules/schedule/schedule.js';
+import ScheduleItem from './modules/schedule/scheduleItem.js';
+import ParameterSet from './modules/parameters/parameterSet.js';
+import FocusField from './modules/parameters/focusField.js'
 import { Shape2D } from './modules/shapes/shape.js';
-import { Color, getRandomColor, blend } from './modules/color.js';
-import {
-    Triangle,
-    Rectangle,
-    Circle,
-    getRandomPoint,
-    Point,
-} from './modules/math.js';
-import { pickRandomly, randomInRange, randomFactors, randomSign } from './modules/utils.js';
+import { generateShape } from './modules/shapeGenerator.js';
+import { Color, generateColor, blend } from './modules/color.js';
 import { Canvas, OriginalCanvas } from './modules/canvas.js';
 import BoundingBox from './modules/boundingBox.js';
+import { randomChance } from './modules/utils.js';
+import { Rectangle } from './modules/math.js';
 
 // These variables are for all canvasses, so let's just store them here.
-/** @type {number} Width of the canvasses */
+/** @type {number} Width of the canvas */
 let canvasWidth;
+/** @type {number} Height of the canvas */
 let canvasHeight;
-
-/** @type {BoundingBox} Bounding box of the canvasses */
+/** @type {BoundingBox} Bounding box of the canvas */
 let canvasBoundingBox;
+
+/** @type {Schedule} */
+let schedule;
+/** @type {Generator} */
+let scheduleIterator;
 
 // Create the three canvasses
 /** The left canvas, with the original painting */
@@ -32,6 +35,10 @@ const testingCanvas = new Canvas('triangle');
 const canvasses = [originalCanvas, productCanvas, testingCanvas];
 
 image.onload = () => {
+    initialize();
+}
+
+function initialize() {
     // Image is loaded, set width and height wherever it should be stored
     ({ width: canvasWidth, height: canvasHeight } = image);
 
@@ -43,92 +50,77 @@ image.onload = () => {
     // Draw the image on the canvas
     originalCanvas.drawImage();
 
-    // Start the program
-    iteration();
-}
+    const canvasFocusField = new FocusField(0, 0, canvasWidth, canvasHeight);
 
-function getRandomShape() {
-    return pickRandomly([
-        generateCircle,
-        generateTriangle,
-        generateRectangle,
-    ])();
-}
+    // Set schedule
+    const parameters0 = new ParameterSet(
+        canvasFocusField,
+        {
+            areaLb: 500,
+            areaUb: 1000,
+        },
+        {
+            alpha: 0.1,
+        },
+        {
+            penalty: 1,
+        },
+    );
+    const scheduleItem0 = new ScheduleItem(parameters0, 10000);
 
-/**
- * Generate a random triangle.
- * @return {Triangle}
- */
-function generateTriangle() {
-    /* 
-    A triangle is defined by three points: p1, p2, and p3. We want nice triangles,
-    that aren't too large. So let's first decide on the area. The area of a triangle
-    is: A = 1/2 * a * b * sin(gamma), where a = (p1, p2), (p1, p3) and gamma = angle(p1).
-    */
+    const parameters1 = new ParameterSet(
+        canvasFocusField,
+        {
+            areaLb: 50,
+            areaUb: 100,
+        },
+        {
+            alpha: 0.1,
+        },
+        {
+            penalty: 3,
+        },
+    );
+    const scheduleItem1 = new ScheduleItem(parameters1, 10000);
 
-    // Start by deciding on an area of the triangle. We don't want too large ones.
-    const area = randomInRange(10, 100);
+    const parameters2 = new ParameterSet(
+        canvasFocusField,
+        {
+            areaLb: 5,
+            areaUb: 25,
+        },
+        {
+            alpha: 0.1,
+        },
+        {
+            penalty: 5,
+        },
+    );
+    const scheduleItem2 = new ScheduleItem(parameters2, 10000);
 
-    // Set p1 as a random point on the canvas.
-    const p1 = getRandomPoint(0, canvasWidth, 0, canvasHeight);
-
-    const { x: x1, y: y1 } = p1;
-
-    // Calculate a random angle for gamma.
-    const gamma = Math.PI * Math.random();
-
-    /* 
-    area = 1/2 a b sin(gamma)
-    rest = a b = 2 * area / sin(gamma)
-    */
-    let rest = 2 * area / Math.sin(gamma);
-
-    const [a, b] = randomFactors(rest, 2);
-
-    // Random angle to cast towards p2 for
-    const angle1 = 2 * Math.PI * Math.random();
-
-    const x2 = x1 + Math.cos(angle1) * a;
-    const y2 = y1 + Math.sin(angle1) * a;
-
-    const p2 = new Point(x2, y2);
-
-    // Angle to cast to p3 from p1
-    const angle2 = angle1 + randomSign() * gamma;
-
-    const x3 = x1 + Math.cos(angle2) * b;
-    const y3 = y1 + Math.cos(angle2) * b;
-
-    const p3 = new Point(x3, y3);
-
-    const triangle = new Triangle(p1, p2, p3);
-
-    return triangle;
-}
-
-function generateCircle() {
-    const area = randomInRange(10, 100);
+    schedule = new Schedule([scheduleItem0, scheduleItem1, scheduleItem2], false);
+    scheduleIterator = schedule.iteration();
     
-    const origin = getRandomPoint(0, canvasWidth, 0, canvasHeight);
-    const radius = Math.sqrt(area / Math.PI);
-
-    return new Circle(origin, radius);
+    loop();
 }
 
-function generateRectangle() {
-    const area = randomInRange(10, 100);
-    const [width, height] = randomFactors(area, 2);
+function loop() {
+    const { done, value: parameters } = scheduleIterator.next();
+    
+    if (done) return;
 
-    const { x: x0, y: y0 } = getRandomPoint(0, canvasWidth - width, 0, canvasHeight - height);
-    return new Rectangle(x0, y0, width, height);
+    simulatedAnnealing(parameters);
+    
+    requestAnimationFrame(loop);
 }
 
 /**
  * Get the score difference of drawing the triangle in the solution.
- * @param {Shape2D} shape 
+ * @param {Shape2D} shape The new shape
+ * @param {ParameterSet} parameters The parameters, for the penalty parameters
  * @return {number}
  */
-function getScoreDiff(shape) {
+function getScoreDiff(shape, parameters) {
     const dataFrame = shape.canvasIntersection(canvasBoundingBox);
 
     // Get the image data of the bounding box
@@ -144,20 +136,21 @@ function getScoreDiff(shape) {
     let totalScoreDiff = 0;
 
     for (const { x, y } of dataFrame.loop()) {
+        // The pixel color of the new shape
+        const cShape = testingCanvas.getPixel(x, y);
+
+        // This pixel isn't being drawn on by the shape, go to the next pixel
+        if (cShape.a === 0) continue;
+
         // The pixel color in the original painting
         const cOriginal = originalCanvas.getPixel(x, y);
 
         // The pixel color in the current solution
         const cCanvas = productCanvas.getPixel(x, y);
 
-        // The pixel color of the new shape
-        const cShape = testingCanvas.getPixel(x, y);
-
-        if (cShape.a === 0) continue;
-
         const cNew = blend(cCanvas, cShape);
 
-        totalScoreDiff += getPixelScoreDiff(cOriginal, cCanvas, cNew);
+        totalScoreDiff += getPixelScoreDiff(cOriginal, cCanvas, cNew, parameters);
     }
 
     return totalScoreDiff;
@@ -166,14 +159,17 @@ function getScoreDiff(shape) {
 /**
  * Get the score of a pixel color by calculating the square sum of the
  * difference between the original and the solution color channels.
- * @param {Color} cNew The pixel color of the original painting
- * @param {Color} cOriginal The pixel color of the solution
+ * @param {Color} cOriginal The pixel color of the original
+ * @param {Color} cCanvas The pixel color of the current solution
+ * @param {Color} cNew The pixel color the new shape
+ * @param {ParameterSet} parameters The parameters for penalty parameters
  * @return {number}
  */
-function getPixelScoreDiff(cOriginal, cCanvas, cNew) {
+function getPixelScoreDiff(cOriginal, cCanvas, cNew, parameters) {
     const { r: rOriginal, g: gOriginal, b: bOriginal } = cOriginal;
     const { r: rCanvas, g: gCanvas, b: bCanvas } = cCanvas;
     const { r: rNew, g: gNew, b: bNew } = cNew;
+    const { penaltyParameters: { penalty } } = parameters;
 
     // Calculate how much closer to the target we got. Negative = better.
     const factor = (cO, cC, cN) => Math.abs(cO - cN) - Math.abs(cO - cC);
@@ -184,9 +180,6 @@ function getPixelScoreDiff(cOriginal, cCanvas, cNew) {
 
     let scoreDiff = 0;
 
-    // Spice. Just a random multiplier for if a color channel is worsening.
-    const penalty = 3;
-
     scoreDiff += rFactor * (rFactor < 0 ? 1 : penalty);
     scoreDiff += gFactor * (gFactor < 0 ? 1 : penalty);
     scoreDiff += bFactor * (bFactor < 0 ? 1 : penalty);
@@ -194,29 +187,35 @@ function getPixelScoreDiff(cOriginal, cCanvas, cNew) {
     return scoreDiff;
 }
 
-/**
- * Display the triangle on the testing canvas.
- * @param {Shape} shape
+let temperature = 100;
+let alpha = 0.95;
+let i = 0;
+let k = 100;
+
+/** 
+ * Do an iteration of the Simulated Annealing.
+ * @param {ParameterSet} parameters The parameters for the generators and such
  */
-function displayShape(shape, color) {
-    // Clear the canvas
+function simulatedAnnealing(parameters) {
+    const shape = generateShape(parameters);
+    const color = generateColor(parameters);
+
+    // Display shape
     testingCanvas.clear();
-
     shape.draw(testingCanvas, color);
-}
 
-function iteration() {
-    const color = getRandomColor(0.1);
-
-    const shape = getRandomShape();
-
-    displayShape(shape, color);
-
-    const scoreDiff = getScoreDiff(shape);
+    const scoreDiff = getScoreDiff(shape, parameters);
 
     if (scoreDiff < 0) {
         shape.draw(productCanvas, color);
+    } else if (randomChance(Math.E**(-scoreDiff / temperature))) {
+        shape.draw(productCanvas, color);
+    } else {
+        // Neighbor not accepted.
     }
 
-    requestAnimationFrame(iteration);
+    if (i++ < k) return;
+    
+    i = 0;
+    temperature *= alpha;
 }
