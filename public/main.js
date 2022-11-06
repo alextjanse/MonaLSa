@@ -50,55 +50,55 @@ function initialize() {
     // Draw the image on the canvas
     originalCanvas.drawImage();
 
+    // Set schedule
+    const scheduleItems = [];
+
     const canvasFocusField = new FocusField(0, 0, canvasWidth, canvasHeight);
 
-    // Set schedule
-    const parameters0 = new ParameterSet(
+    for (let splits = 1; (canvasWidth * canvasHeight) / (splits * splits) > 1000; splits *= 2)
+    {
+        const width = canvasWidth / splits;
+        const height = canvasHeight / splits;
+        const area = width * height;
+
+        for (let x = 0; x < splits; x++) {
+            for (let y = 0; y < splits; y++) {
+                const focusField = new FocusField(x * width, y * height, width, height);
+                const parameters = new ParameterSet(
+                    focusField,
+                    {
+                        areaLb: area * 0.1,
+                        areaUb: area * 0.25,
+                    },
+                    {
+                        alpha: 0.1,
+                    },
+                    {
+                        penalty: splits,
+                    },
+                );
+
+                scheduleItems.push(new ScheduleItem(parameters, 100));
+            }
+        }
+    }
+
+    const parametersDetails = new ParameterSet(
         canvasFocusField,
         {
-            areaLb: 500,
-            areaUb: 1000,
+            areaLb: 10,
+            areaUb: 100,
         },
         {
             alpha: 0.1,
         },
         {
-            penalty: 1,
-        },
-    );
-    const scheduleItem0 = new ScheduleItem(parameters0, 10000);
-
-    const parameters1 = new ParameterSet(
-        canvasFocusField,
-        {
-            areaLb: 50,
-            areaUb: 100,
-        },
-        {
-            alpha: 0.3,
-        },
-        {
             penalty: 3,
         },
     );
-    const scheduleItem1 = new ScheduleItem(parameters1, 10000);
+    scheduleItems.push(new ScheduleItem(parametersDetails, 100));
 
-    const parameters2 = new ParameterSet(
-        canvasFocusField,
-        {
-            areaLb: 5,
-            areaUb: 25,
-        },
-        {
-            alpha: 0.5,
-        },
-        {
-            penalty: 5,
-        },
-    );
-    const scheduleItem2 = new ScheduleItem(parameters2, 10000);
-
-    schedule = new Schedule([scheduleItem0, scheduleItem1, scheduleItem2], true);
+    schedule = new Schedule(scheduleItems, true);
     scheduleIterator = schedule.iteration();
     
     loop();

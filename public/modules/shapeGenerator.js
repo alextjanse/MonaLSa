@@ -32,7 +32,7 @@ function generateTriangle(parameters) {
     // Calculate a random angle for gamma.
     const gamma = Math.PI * Math.random();
 
-    /* 
+    /*
     area = 1/2 a b sin(gamma)
     rest = a b = 2 * area / sin(gamma)
     */
