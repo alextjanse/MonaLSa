@@ -52,53 +52,25 @@ function initialize() {
 
     const canvasFocusField = new FocusField(0, 0, canvasWidth, canvasHeight);
 
+    const scheduleItems = [];
+
     // Set schedule
-    const parameters0 = new ParameterSet(
+    const parameters = new ParameterSet(
         canvasFocusField,
         {
-            areaLb: 500,
-            areaUb: 1000,
+            areaLb: 10,
+            areaUb: 100,
         },
         {
             alpha: 0.1,
         },
         {
-            penalty: 1,
-        },
-    );
-    const scheduleItem0 = new ScheduleItem(parameters0, 10000);
-
-    const parameters1 = new ParameterSet(
-        canvasFocusField,
-        {
-            areaLb: 50,
-            areaUb: 100,
-        },
-        {
-            alpha: 0.3,
-        },
-        {
             penalty: 3,
         },
     );
-    const scheduleItem1 = new ScheduleItem(parameters1, 10000);
+    scheduleItems.push(new ScheduleItem(parameters, 10000));
 
-    const parameters2 = new ParameterSet(
-        canvasFocusField,
-        {
-            areaLb: 5,
-            areaUb: 25,
-        },
-        {
-            alpha: 0.5,
-        },
-        {
-            penalty: 5,
-        },
-    );
-    const scheduleItem2 = new ScheduleItem(parameters2, 10000);
-
-    schedule = new Schedule([scheduleItem0, scheduleItem1, scheduleItem2], true);
+    schedule = new Schedule(scheduleItems, true);
     scheduleIterator = schedule.iteration();
     
     loop();
